@@ -1,3 +1,4 @@
+import axios from "axios";
 import React, { useState } from "react";
 
 const ListItem = React.memo(({ item, todoData, setTodoData }) => {
@@ -13,12 +14,26 @@ const ListItem = React.memo(({ item, todoData, setTodoData }) => {
   const [editedTitle, setEditedTitle] = useState(item.title);
 
   const deleteClick = (id) => {
+    if (window.confirm("진짜 지울건가요?")) {
+      let body = {
+        id: id,
+      };
+      axios
+        .post("/api/post/delete", body)
+        .then((res) => {
+          console.log(res);
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
+
     /* 클릭된 ID 와 다른 요소들만 걸러서 새로운 배열 생성 */
     const nowTodo = todoData.filter((item) => item.id !== id);
     // console.log("클릭", nowTodo);
     setTodoData(nowTodo);
     // 로컬에 저장한다.(DB 예정)
-    localStorage.setItem("todoData", JSON.stringify(nowTodo));
+    // localStorage.setItem("todoData", JSON.stringify(nowTodo));
   };
 
   const editChange = (event) => {
@@ -34,10 +49,25 @@ const ListItem = React.memo(({ item, todoData, setTodoData }) => {
       return item;
     });
 
+    let body = {
+      id: todoId,
+      completed: item.completed,
+    };
     //axios 를 통해 MongoDB complete 업데이트 *
-    setTodoData(updateTodo);
+    // then(): 서버에서 회신(응답)이 왔을 때 처리
+    // catch(): 서버에서 회신(응답)이 없을 때 처리
+    axios
+      .post("/api/post/updatetoggle", body)
+      .then((res) => {
+        // console.log(res);
+        setTodoData(updateTodo);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     // 로컬에 저장한다.(DB 예정)
-    localStorage.setItem("todoData", JSON.stringify(updateTodo));
+    // localStorage.setItem("todoData", JSON.stringify(updateTodo));
   };
 
   // 현재 item.id 에 해당하는 것만 업데이트 한다.
@@ -60,12 +90,24 @@ const ListItem = React.memo(({ item, todoData, setTodoData }) => {
       return item;
     });
     // 데이터 갱신
+    let body = {
+      id: todoId,
+      title: editedTitle,
+    };
     // axios 를 이용해서 MongoDB 타이틀 업데이트 *
-    setTodoData(tempTodo);
+    axios
+      .post("/api/post/updatetitle", body)
+      .then((res) => {
+        console.log(res.data);
+        setTodoData(tempTodo);
+        //목록보기로 가기
+        setIsEditing(false);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
     // 로컬에 저장한다.(DB 예정)
-    localStorage.setItem("todoData", JSON.stringify(tempTodo));
-    //목록보기로 가기
-    setIsEditing(false);
+    // localStorage.setItem("todoData", JSON.stringify(tempTodo));
   };
 
   if (isEditing) {

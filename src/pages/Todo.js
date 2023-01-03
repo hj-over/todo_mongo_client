@@ -106,10 +106,19 @@ const Todo = () => {
   };
 
   const deleteAllClick = () => {
+    if (window.confirm("진짜 지울건가요?"));
     //axios 를 이용하여 MongoDB 목록 비워줌.
-    setTodoData([]);
+    axios
+      .post("/api/post/deleteall")
+      .then(() => {
+        setTodoData([]);
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
     //자료를 지운다(DB 초기화)
-    localStorage.clear();
+    // localStorage.clear();
   };
 
   return (
